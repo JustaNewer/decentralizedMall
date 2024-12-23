@@ -6,27 +6,47 @@
     :z-index="3000"
   >
     <div class="app-container" :class="{ 'dark-theme': isDark }">
-      <el-switch
-        v-model="isDark"
-        class="theme-switch"
-        inline-prompt
-        :active-icon="Moon"
-        :inactive-icon="Sunny"
-        @change="toggleTheme"
-      />
+      <div class="header-buttons">
+        <el-switch
+          v-model="isDark"
+          class="theme-switch"
+          inline-prompt
+          :active-icon="Moon"
+          :inactive-icon="Sunny"
+          @change="toggleTheme"
+        />
+        <el-badge :value="notificationCount" :hidden="notificationCount === 0">
+          <el-button
+            class="icon-button"
+            :icon="Bell"
+            circle
+            @click="$router.push('/home/notifications')"
+          />
+        </el-badge>
+        <el-button
+          class="icon-button"
+          :icon="ShoppingCart"
+          circle
+          @click="$router.push('/home/cart')"
+        />
+      </div>
       <router-view></router-view>
     </div>
   </el-config-provider>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { ElConfigProvider } from "element-plus";
 import zhCn from "element-plus/dist/locale/zh-cn.mjs";
-import { Moon, Sunny } from "@element-plus/icons-vue";
+import { Moon, Sunny, Bell, ShoppingCart } from "@element-plus/icons-vue";
+import axios from 'axios';
+import { useUserStore } from './stores/user';
 
 const size = ref("default");
 const isDark = ref(false);
+const notificationCount = ref(0);
+const userStore = useUserStore();
 
 // 监听主题变化
 watch(isDark, (newVal) => {
@@ -34,6 +54,39 @@ watch(isDark, (newVal) => {
     document.documentElement.classList.add("dark-theme");
   } else {
     document.documentElement.classList.remove("dark-theme");
+  }
+});
+
+// 获取未读通知数量
+const fetchNotificationCount = async () => {
+  if (userStore.isLoggedIn) {
+    try {
+      const response = await axios.get('/api/products/notifications');
+      notificationCount.value = response.data.length;
+    } catch (error) {
+      console.error('获取通知数量失败:', error);
+    }
+  }
+};
+
+// 定期检查通知
+const startNotificationPolling = () => {
+  fetchNotificationCount();
+  setInterval(fetchNotificationCount, 30000); // 每30秒检查一次
+};
+
+onMounted(() => {
+  if (userStore.isLoggedIn) {
+    startNotificationPolling();
+  }
+});
+
+// 监听登录状态变化
+watch(() => userStore.isLoggedIn, (newVal) => {
+  if (newVal) {
+    startNotificationPolling();
+  } else {
+    notificationCount.value = 0;
   }
 });
 </script>
@@ -154,10 +207,28 @@ body,
   color: var(--el-text-color-primary) !important;
 }
 
-.theme-switch {
+.header-buttons {
   position: fixed;
   top: 15px;
-  right: 35px;
+  right: 235px;
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.icon-button {
+  background: transparent;
+  border: none;
+  color: var(--el-text-color-primary);
+  font-size: 20px;
+}
+
+.dark-theme .icon-button {
+  color: #ffffff;
+}
+
+.icon-button:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 </style>

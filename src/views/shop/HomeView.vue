@@ -22,6 +22,14 @@
             <el-icon><ShoppingCart /></el-icon>
             <span>购买商品</span>
           </el-menu-item>
+          <el-menu-item index="/home/cart">
+            <el-icon><ShoppingBag /></el-icon>
+            <span>购物车</span>
+          </el-menu-item>
+          <el-menu-item index="/home/notifications">
+            <el-icon><Bell /></el-icon>
+            <span>我的通知</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -43,7 +51,7 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
-import { User, Goods, ShoppingCart } from "@element-plus/icons-vue";
+import { User, Goods, ShoppingCart, ShoppingBag, Bell } from "@element-plus/icons-vue";
 
 const route = useRoute();
 
@@ -55,6 +63,10 @@ const pageTitle = computed(() => {
       return "我发布的商品";
     case "/home/buy-products":
       return "购买商品";
+    case "/home/cart":
+      return "购物车";
+    case "/home/notifications":
+      return "我的通知";
     default:
       return "";
   }

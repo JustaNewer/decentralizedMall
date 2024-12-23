@@ -33,12 +33,14 @@
       <el-table-column prop="description" label="描述" />
       <el-table-column label="操作" width="200">
         <template #default="scope">
-          <el-button type="primary" size="small" @click="handleEdit(scope.row)"
-            >编辑</el-button
-          >
-          <el-button type="danger" size="small" @click="handleDelete(scope.row)"
-            >删除</el-button
-          >
+          <el-button type="primary" size="small" @click="handleEdit(scope.row)">
+            <el-icon><Edit /></el-icon>
+            编辑
+          </el-button>
+          <el-button type="danger" size="small" @click="handleDelete(scope.row)">
+            <el-icon><Delete /></el-icon>
+            删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -57,20 +59,19 @@
           <el-input
             v-model="currentProduct.price"
             class="custom-input-number"
-            style="width: 100%"
+            style="width: 40%"
             type="number"
             min="0"
             step="0.01"
           />
         </el-form-item>
-        <el-form-item label="商品描述">
+        <el-form-item label="商品描述" >
           <el-input
             v-model="currentProduct.description"
             type="textarea"
             class="custom-textarea"
             :rows="4"
             placeholder="请输入商品描述"
-            style="background-color: #141414"
           />
         </el-form-item>
       </el-form>
@@ -90,7 +91,7 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Search } from "@element-plus/icons-vue";
+import { Search, Edit, Delete } from "@element-plus/icons-vue";
 
 const products = ref([]);
 const searchQuery = ref("");
@@ -117,7 +118,7 @@ const fetchProducts = async () => {
   }
 };
 
-// 搜索商品
+// 搜索���品
 const handleSearch = async () => {
   try {
     const response = await axios.get(
@@ -178,7 +179,7 @@ const handleDelete = async (row) => {
       distinguishCancelAndClose: true,
       confirmButtonText: "确定",
       cancelButtonText: "取消",
-      customClass: "custom-message-box",
+      customClass: `custom-message-box${document.documentElement.classList.contains('dark-theme') ? ' dark-theme' : ''}`,
     });
 
     await axios.delete(`/api/products/${row.product_id}`);
@@ -232,7 +233,6 @@ onMounted(() => {
   margin-top: 20px;
 }
 
-/* 确保按钮颜色在暗色模式下也正确显示 */
 :deep(.dark-theme) .el-button--primary {
   --el-button-bg-color: var(--el-color-primary);
   --el-button-border-color: var(--el-color-primary);
@@ -241,203 +241,218 @@ onMounted(() => {
   color: #1d1e1f;
 }
 
-/* 自定义输入数字控件样式 */
-.custom-input-number {
-  /* 加减号按钮的样式 */
-  :deep(.el-input-number__decrease),
-  :deep(.el-input-number__increase) {
-    background-color: #141414;    /* 深色主题背景色 */
-    border-color: #363637;        /* 深色主题边框色 */
-    color: #ffffff;               /* 加减号的颜色 */
-  }
-
-  /* 鼠标悬停时的样式 */
-  :deep(.el-input-number__decrease:hover),
-  :deep(.el-input-number__increase:hover) {
-    background-color: #1a1a1a;    /* 悬停时稍微亮一点 */
-    border-color: #363637;
-  }
-
-  /* 输入框本身的样式 */
-  :deep(.el-input__wrapper) {
-    background-color: #141414;
-    box-shadow: 0 0 0 1px #363637 inset;
-  }
-
-  :deep(.el-input__inner) {
-    color: #ffffff;
-  }
+.custom-input-number :deep(.el-input-number__decrease),
+.custom-input-number :deep(.el-input-number__increase) {
+  background-color: #141414;
+  border-color: #363637;
+  color: #ffffff;
 }
 
-/* 自定义文本域样式 */
+.custom-input-number :deep(.el-input-number__decrease:hover),
+.custom-input-number :deep(.el-input-number__increase:hover) {
+  background-color: #1a1a1a;
+  border-color: #363637;
+}
+
+.custom-input-number :deep(.el-input__wrapper) {
+  background-color: #141414;
+  box-shadow: 0 0 0 1px #363637 inset;
+}
+
+.custom-input-number :deep(.el-input__inner) {
+  color: #ffffff;
+}
+
 .custom-textarea {
-  :deep(.el-textarea__inner) {
-    background-color: #141414;
-    border-color: var(--el-border-color);
-    color: var(--el-text-color-primary);
-  }
+  background-color: #141414;
 }
 
-/* 暗色主题下的特殊样式 */
-:deep(.dark-theme) {
-  .custom-textarea .el-textarea__inner {
-    background-color: #141414;
-  }
-
-  .el-input-number__decrease,
-  .el-input-number__increase {
-    background-color: #141414;
-    border-color: #363637;
-    color: #ffffff;
-  }
-
-  .el-input__inner,
-  .el-textarea__inner {
-    background-color: #141414;
-    border-color: var(--el-border-color);
-    color: #ffffff;
-  }
-
-  /* 商品名称输入框样式 */
-  .el-input__wrapper {
-    background-color: #141414;
-    box-shadow: 0 0 0 1px #363637 inset;
-  }
-
-  .el-input__wrapper:hover {
-    box-shadow: 0 0 0 1px #363637 inset;
-  }
+.custom-textarea :deep(.el-textarea__inner) {
+  background-color: #ffffff;
+  border-color: #dcdfe6;
+  border-radius: 4px;
+  color: #606266;
+  transition: all 0.3s;
 }
 
-/* 对话框样式 */
-:deep(.el-dialog) {
-  .el-dialog__body {
-    padding-top: 20px;
-  }
-
-  .dialog-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-
-    .el-button--danger {
-      background-color: #f56c6c;
-      border-color: #f56c6c;
-      color: #ffffff;
-    }
-
-    .el-button--danger:hover {
-      background-color: #f78989;
-      border-color: #f78989;
-    }
-  }
+:deep(.dark-theme) .custom-textarea .el-textarea__inner {
+  background-color: #141414;
+  border-color: #363637;
+  color: #ffffff;
 }
 
-/* 自定义基础输入框样式 */
-.custom-input {
-  :deep(.el-input__wrapper) {
-    background-color: #ffffff;
-    border: 1px solid #dcdfe6;
-    border-radius: 4px;
-    transition: all 0.3s;
-  }
-
-  :deep(.el-input__inner) {
-    height: 32px;
-    line-height: 32px;
-    padding: 0 12px;
-    color: #606266;
-  }
+:deep(.dark-theme) .el-input-number__decrease,
+:deep(.dark-theme) .el-input-number__increase {
+  background-color: #141414;
+  border-color: #363637;
+  color: #ffffff;
 }
 
-/* 暗色主题下��输入框样式 */
-:deep(.dark-theme) {
-  .custom-input {
-    .el-input__wrapper {
-      background-color: #141414;
-      border-color: #363637;
-    }
-
-    .el-input__inner {
-      color: #ffffff;
-    }
-
-    .el-input__wrapper:hover {
-      border-color: #409eff;
-    }
-  }
-
-  /* 数字输入框样式 */
-  .custom-input-number {
-    .el-input-number__decrease,
-    .el-input-number__increase {
-      background-color: #141414;
-      border: 1px solid #363637;
-      color: #ffffff;
-      height: 32px;
-      width: 32px;
-      line-height: 32px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .el-input-number__decrease:hover,
-    .el-input-number__increase:hover {
-      background-color: #1a1a1a;
-      border-color: #409eff;
-    }
-
-    .el-input__wrapper {
-      background-color: #141414;
-      border: 1px solid #363637;
-    }
-
-    .el-input__inner {
-      background-color: #141414;
-      color: #ffffff;
-      height: 32px;
-      line-height: 32px;
-      text-align: center;
-    }
-  }
-
-  /* 文本域样式 */
-  .custom-textarea {
-    .el-textarea__inner {
-      background-color: #141414;
-      border: 1px solid #363637;
-      color: #141414;
-      padding: 12px;
-      line-height: 1.5;
-      min-height: 80px;
-      transition: all 0.3s;
-    }
-
-    .el-textarea__inner:hover {
-      border-color: #409eff;
-    }
-
-    .el-textarea__inner:focus {
-      border-color: #409eff;
-      outline: none;
-    }
-  }
+:deep(.dark-theme) .el-input__inner,
+:deep(.dark-theme) .el-textarea__inner {
+  background-color: #141414;
+  border-color: var(--el-border-color);
+  color: #ffffff;
 }
 
-/* 确认框样式 */
-:deep(.custom-message-box) {
-  .el-message-box__btns {
-    .el-button--default {
-      background-color: #f56c6c;
-      border-color: #f56c6c;
-      color: #ffffff;
-    }
+:deep(.dark-theme) .el-input__wrapper {
+  background-color: #141414;
+  box-shadow: 0 0 0 1px #363637 inset;
+}
 
-    .el-button--default:hover {
-      background-color: #f78989;
-      border-color: #f78989;
-    }
-  }
+:deep(.dark-theme) .el-input__wrapper:hover {
+  box-shadow: 0 0 0 1px #363637 inset;
+}
+
+:deep(.el-dialog) .el-dialog__body {
+  padding-top: 20px;
+}
+
+:deep(.el-dialog) .dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+:deep(.el-dialog) .dialog-footer .el-button--danger {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+  color: #ffffff;
+}
+
+:deep(.el-dialog) .dialog-footer .el-button--danger:hover {
+  background-color: #f78989;
+  border-color: #f78989;
+}
+
+:deep(.dark-theme) .el-dialog {
+  background-color: #141414;
+  border: 1px solid #363637;
+}
+
+:deep(.dark-theme) .el-dialog__header {
+  border-bottom: 1px solid #363637;
+}
+
+:deep(.dark-theme) .el-dialog__title {
+  color: #ffffff;
+}
+
+:deep(.dark-theme) .el-form-item__label {
+  color: #ffffff;
+}
+
+:deep(.dark-theme) .el-dialog__footer {
+  border-top: 1px solid #363637;
+}
+
+.custom-input :deep(.el-input__wrapper) {
+  background-color: #ffffff;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.custom-input :deep(.el-input__inner) {
+  height: 32px;
+  line-height: 32px;
+  padding: 0 12px;
+  color: #606266;
+}
+
+:deep(.dark-theme) .custom-input .el-input__wrapper {
+  background-color: #141414;
+  border-color: #363637;
+}
+
+:deep(.dark-theme) .custom-input .el-input__inner {
+  color: #ffffff;
+}
+
+:deep(.dark-theme) .custom-input .el-input__wrapper:hover {
+  border-color: #409eff;
+}
+
+:deep(.dark-theme) .custom-input-number .el-input-number__decrease,
+:deep(.dark-theme) .custom-input-number .el-input-number__increase {
+  background-color: #141414;
+  border: 1px solid #363637;
+  color: #ffffff;
+  height: 32px;
+  width: 32px;
+  line-height: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+:deep(.dark-theme) .custom-input-number .el-input-number__decrease:hover,
+:deep(.dark-theme) .custom-input-number .el-input-number__increase:hover {
+  background-color: #1a1a1a;
+  border-color: #409eff;
+}
+
+:deep(.dark-theme) .custom-input-number .el-input__wrapper {
+  background-color: #141414;
+  border: 1px solid #363637;
+}
+
+:deep(.dark-theme) .custom-input-number .el-input__inner {
+  background-color: #141414;
+  color: #ffffff;
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+}
+
+:deep(.dark-theme) .custom-textarea .el-textarea__inner {
+  background-color: #141414;
+  border: 1px solid #363637;
+  color: #ffffff;
+  padding: 12px;
+  line-height: 1.5;
+  min-height: 80px;
+  transition: all 0.3s;
+}
+
+:deep(.dark-theme) .custom-textarea .el-textarea__inner:hover {
+  border-color: #409eff;
+}
+
+:deep(.dark-theme) .custom-textarea .el-textarea__inner:focus {
+  border-color: #409eff;
+  outline: none;
+}
+
+:deep(.custom-message-box) .el-message-box__btns .el-button--default {
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+  color: #ffffff;
+}
+
+:deep(.custom-message-box) .el-message-box__btns .el-button--default:hover {
+  background-color: #f78989;
+  border-color: #f78989;
+}
+
+:deep(.custom-message-box.dark-theme) {
+  background-color: #141414;
+  border-color: #363637;
+}
+
+:deep(.custom-message-box.dark-theme) .el-message-box__title {
+  color: #ffffff;
+}
+
+:deep(.custom-message-box.dark-theme) .el-message-box__content {
+  color: #ffffff;
+}
+
+:deep(.custom-message-box.dark-theme) .el-message-box__container {
+  background-color: #141414;
+}
+
+:deep(.custom-message-box.dark-theme) .el-message-box__headerbtn .el-message-box__close {
+  color: #ffffff;
 }
 </style> 
