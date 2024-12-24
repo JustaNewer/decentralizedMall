@@ -65,7 +65,7 @@
             step="0.01"
           />
         </el-form-item>
-        <el-form-item label="商品描述" >
+        <el-form-item label="商品描述">
           <el-input
             v-model="currentProduct.description"
             type="textarea"
@@ -118,7 +118,7 @@ const fetchProducts = async () => {
   }
 };
 
-// 搜索���品
+// 搜索商品
 const handleSearch = async () => {
   try {
     const response = await axios.get(
@@ -233,75 +233,70 @@ onMounted(() => {
   margin-top: 20px;
 }
 
-:deep(.dark-theme) .el-button--primary {
-  --el-button-bg-color: var(--el-color-primary);
-  --el-button-border-color: var(--el-color-primary);
-  --el-button-hover-bg-color: var(--el-color-primary-light-3);
-  --el-button-hover-border-color: var(--el-color-primary-light-3);
-  color: #1d1e1f;
-}
-
-.custom-input-number :deep(.el-input-number__decrease),
-.custom-input-number :deep(.el-input-number__increase) {
-  background-color: #141414;
-  border-color: #363637;
-  color: #ffffff;
-}
-
-.custom-input-number :deep(.el-input-number__decrease:hover),
-.custom-input-number :deep(.el-input-number__increase:hover) {
-  background-color: #1a1a1a;
-  border-color: #363637;
-}
-
-.custom-input-number :deep(.el-input__wrapper) {
-  background-color: #141414;
-  box-shadow: 0 0 0 1px #363637 inset;
-}
-
-.custom-input-number :deep(.el-input__inner) {
-  color: #ffffff;
-}
-
-.custom-textarea {
-  background-color: #141414;
-}
-
-.custom-textarea :deep(.el-textarea__inner) {
+/* 浅色主题基础样式 */
+.el-input__wrapper,
+.el-textarea__wrapper {
   background-color: #ffffff;
-  border-color: #dcdfe6;
+  border: 1px solid #dcdfe6;
   border-radius: 4px;
-  color: #606266;
   transition: all 0.3s;
+  box-shadow: none;
 }
 
-:deep(.dark-theme) .custom-textarea .el-textarea__inner {
-  background-color: #141414;
-  border-color: #363637;
-  color: #ffffff;
+.el-input__inner,
+.el-textarea__inner {
+  height: 32px;
+  line-height: 32px;
+  padding: 0 12px;
+  color: #606266;
+  background-color: #ffffff;
 }
 
-:deep(.dark-theme) .el-input-number__decrease,
-:deep(.dark-theme) .el-input-number__increase {
-  background-color: #141414;
-  border-color: #363637;
-  color: #ffffff;
+.el-textarea__inner {
+  height: auto;
+  line-height: 1.5;
+  padding: 8px 12px;
+}
+
+/* 暗色主题覆盖样式 */
+:deep(.dark-theme) .el-input__wrapper,
+:deep(.dark-theme) .el-textarea__wrapper {
+  background-color: #141414 !important;
+  border-color: #363637 !important;
+  box-shadow: 0 0 0 1px #363637 inset !important;
 }
 
 :deep(.dark-theme) .el-input__inner,
 :deep(.dark-theme) .el-textarea__inner {
-  background-color: #141414;
-  border-color: var(--el-border-color);
-  color: #ffffff;
+  color: #141414  !important;
+  background-color: #141414 !important;
 }
 
-:deep(.dark-theme) .el-input__wrapper {
-  background-color: #141414;
-  box-shadow: 0 0 0 1px #363637 inset;
+:deep(.dark-theme) .el-textarea__wrapper {
+  background-color: #141414 !important;
 }
 
-:deep(.dark-theme) .el-input__wrapper:hover {
-  box-shadow: 0 0 0 1px #363637 inset;
+:deep(.dark-theme) .el-textarea__inner {
+  background-color: #141414 !important;
+  color: #141414  !important;
+}
+
+:deep(.dark-theme) .el-input-number__decrease,
+:deep(.dark-theme) .el-input-number__increase {
+  background-color: #141414 !important;
+  border-color: #363637 !important;
+  color: #ffffff !important;
+}
+
+:deep(.dark-theme) .el-input-number__decrease:hover,
+:deep(.dark-theme) .el-input-number__increase:hover {
+  background-color: #1a1a1a !important;
+  border-color: #363637 !important;
+}
+
+/* 对话框样式 */
+:deep(.el-dialog) {
+  background-color: var(--el-bg-color-overlay);
 }
 
 :deep(.el-dialog) .el-dialog__body {
@@ -314,17 +309,7 @@ onMounted(() => {
   gap: 10px;
 }
 
-:deep(.el-dialog) .dialog-footer .el-button--danger {
-  background-color: #f56c6c;
-  border-color: #f56c6c;
-  color: #ffffff;
-}
-
-:deep(.el-dialog) .dialog-footer .el-button--danger:hover {
-  background-color: #f78989;
-  border-color: #f78989;
-}
-
+/* 暗色主题对话框样式 */
 :deep(.dark-theme) .el-dialog {
   background-color: #141414;
   border: 1px solid #363637;
@@ -346,84 +331,7 @@ onMounted(() => {
   border-top: 1px solid #363637;
 }
 
-.custom-input :deep(.el-input__wrapper) {
-  background-color: #ffffff;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  transition: all 0.3s;
-}
-
-.custom-input :deep(.el-input__inner) {
-  height: 32px;
-  line-height: 32px;
-  padding: 0 12px;
-  color: #606266;
-}
-
-:deep(.dark-theme) .custom-input .el-input__wrapper {
-  background-color: #141414;
-  border-color: #363637;
-}
-
-:deep(.dark-theme) .custom-input .el-input__inner {
-  color: #ffffff;
-}
-
-:deep(.dark-theme) .custom-input .el-input__wrapper:hover {
-  border-color: #409eff;
-}
-
-:deep(.dark-theme) .custom-input-number .el-input-number__decrease,
-:deep(.dark-theme) .custom-input-number .el-input-number__increase {
-  background-color: #141414;
-  border: 1px solid #363637;
-  color: #ffffff;
-  height: 32px;
-  width: 32px;
-  line-height: 32px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-:deep(.dark-theme) .custom-input-number .el-input-number__decrease:hover,
-:deep(.dark-theme) .custom-input-number .el-input-number__increase:hover {
-  background-color: #1a1a1a;
-  border-color: #409eff;
-}
-
-:deep(.dark-theme) .custom-input-number .el-input__wrapper {
-  background-color: #141414;
-  border: 1px solid #363637;
-}
-
-:deep(.dark-theme) .custom-input-number .el-input__inner {
-  background-color: #141414;
-  color: #ffffff;
-  height: 32px;
-  line-height: 32px;
-  text-align: center;
-}
-
-:deep(.dark-theme) .custom-textarea .el-textarea__inner {
-  background-color: #141414;
-  border: 1px solid #363637;
-  color: #ffffff;
-  padding: 12px;
-  line-height: 1.5;
-  min-height: 80px;
-  transition: all 0.3s;
-}
-
-:deep(.dark-theme) .custom-textarea .el-textarea__inner:hover {
-  border-color: #409eff;
-}
-
-:deep(.dark-theme) .custom-textarea .el-textarea__inner:focus {
-  border-color: #409eff;
-  outline: none;
-}
-
+/* 确认框样式 */
 :deep(.custom-message-box) .el-message-box__btns .el-button--default {
   background-color: #f56c6c;
   border-color: #f56c6c;

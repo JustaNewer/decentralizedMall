@@ -190,14 +190,16 @@ router.post('/cart/purchase', authenticateToken, async (req, res) => {
     }
 });
 
-// 获取所有商品
+// 获取所有商品（排除自己的商品）
 router.get('/all', authenticateToken, async (req, res) => {
     try {
         const [products] = await pool.query(
             `SELECT p.*, u.username as seller 
              FROM products p 
              JOIN users u ON p.created_by = u.user_id 
-             ORDER BY p.product_id DESC`
+             WHERE p.created_by != ?
+             ORDER BY p.product_id DESC`,
+            [req.user.userId]
         );
         res.json(products || []);
     } catch (error) {
@@ -206,7 +208,7 @@ router.get('/all', authenticateToken, async (req, res) => {
     }
 });
 
-// 搜索商品
+// 搜索商品（排除自己的商品）
 router.get('/all/search', authenticateToken, async (req, res) => {
     try {
         const searchQuery = `%${req.query.q || ''}%`;
@@ -214,9 +216,9 @@ router.get('/all/search', authenticateToken, async (req, res) => {
             `SELECT p.*, u.username as seller 
              FROM products p 
              JOIN users u ON p.created_by = u.user_id 
-             WHERE p.name LIKE ? OR p.description LIKE ? 
+             WHERE p.created_by != ? AND (p.name LIKE ? OR p.description LIKE ?)
              ORDER BY p.product_id DESC`,
-            [searchQuery, searchQuery]
+            [req.user.userId, searchQuery, searchQuery]
         );
         res.json(products || []);
     } catch (error) {

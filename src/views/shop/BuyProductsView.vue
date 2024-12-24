@@ -69,15 +69,20 @@ const router = useRouter();
 const handleSearch = async () => {
   loading.value = true;
   try {
+    // 获取商品列表，排除自己的商品
     const response = await axios.get(
       `/api/products/all${
         searchQuery.value ? `/search?q=${searchQuery.value}` : ""
       }`
     );
-    products.value = response.data;
+    // 过滤掉自己发布的商品
+    products.value = response.data.filter(
+      product => product.created_by !== userStore.user.user_id
+    );
   } catch (error) {
     console.error('搜索失败:', error);
     ElMessage.error("搜索失败");
+    products.value = [];
   } finally {
     loading.value = false;
   }
