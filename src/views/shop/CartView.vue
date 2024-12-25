@@ -115,7 +115,8 @@ const handleDelete = async (item) => {
     await ElMessageBox.confirm('确定要从购物车中删除这个商品吗？', '提示', {
       type: 'warning',
       confirmButtonText: '确定',
-      cancelButtonText: '取消'
+      cancelButtonText: '取消',
+      cancelButtonClass: "el-button--danger"
     });
     
     await axios.delete(`/api/products/cart/${item.cart_id}`);
@@ -191,5 +192,52 @@ onMounted(() => {
 
 :deep(.el-input-number) {
   width: 120px;
+}
+
+/* 数字输入框样式 */
+:deep(.el-input-number .el-input__wrapper) {
+  background-color: #ffffff !important;
+}
+
+/* 数字输入框按钮样式 */
+:deep(.dark-theme) .el-input-number__decrease,
+:deep(.dark-theme) .el-input-number__increase {
+  background-color: #141414 !important;
+  color: #ffffff !important;
+  border-color: #363637 !important;
+}
+
+:deep(.el-input-number__decrease),
+:deep(.el-input-number__increase) {
+  background-color: #ffffff !important;
+  color: #141414 !important;
+  border-color: #363637 !important;
+}
+
+:deep(.el-input-number__decrease:hover),
+:deep(.el-input-number__increase:hover) {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+:deep(.dark-theme) .el-input-number__decrease:hover,
+:deep(.dark-theme) .el-input-number__increase:hover {
+  background-color: #1a1a1a !important;
+}
+
+:deep() .el-input__inner {
+  color: #141414 !important;
+}
+
+:deep() .el-input-number {
+  color: #141414 !important;
+}
+
+:deep(.dark-theme) .el-input__inner {
+  color: #ffffff !important;
+}
+
+:deep(.dark-theme) .el-input-number {
+  color: #ffffff !important;
 }
 </style> 

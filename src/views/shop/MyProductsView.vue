@@ -53,23 +53,23 @@
         style="max-width: 600px"
       >
         <el-form-item label="商品名称">
-          <el-input v-model="currentProduct.name" class="custom-input" />
+          <el-input v-model="currentProduct.name" />
         </el-form-item>
         <el-form-item label="价格">
           <el-input
             v-model="currentProduct.price"
-            class="custom-input-number"
             style="width: 40%"
             type="number"
             min="0"
             step="0.01"
+            @input="validatePrice"
+            placeholder="请输入商品价格"
           />
         </el-form-item>
         <el-form-item label="商品描述">
           <el-input
             v-model="currentProduct.description"
             type="textarea"
-            class="custom-textarea"
             :rows="4"
             placeholder="请输入商品描述"
           />
@@ -77,9 +77,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="danger" @click="dialogVisible = false"
-            >取消</el-button
-          >
+          <el-button type="danger" @click="dialogVisible = false">取消</el-button>
           <el-button type="primary" @click="handleSave">确定</el-button>
         </div>
       </template>
@@ -151,6 +149,12 @@ const handleEdit = (row) => {
 // 保存商品
 const handleSave = async () => {
   try {
+    // 验证价格是否为负数
+    if (currentProduct.value.price < 0) {
+      ElMessage.error('商品价格不能为负数');
+      return;
+    }
+
     if (currentProduct.value.product_id) {
       // 更新商品
       await axios.put(
@@ -179,6 +183,7 @@ const handleDelete = async (row) => {
       distinguishCancelAndClose: true,
       confirmButtonText: "确定",
       cancelButtonText: "取消",
+      cancelButtonClass: "el-button--danger",
       customClass: `custom-message-box${document.documentElement.classList.contains('dark-theme') ? ' dark-theme' : ''}`,
     });
 
@@ -190,6 +195,14 @@ const handleDelete = async (row) => {
     if (error !== "cancel") {
       ElMessage.error("删除失败");
     }
+  }
+};
+
+// 验证价格
+const validatePrice = (value) => {
+  if (value < 0) {
+    currentProduct.value.price = 0;
+    ElMessage.warning('价格不能为负数');
   }
 };
 
@@ -233,32 +246,7 @@ onMounted(() => {
   margin-top: 20px;
 }
 
-/* 浅色主题基础样式 */
-.el-input__wrapper,
-.el-textarea__wrapper {
-  background-color: #ffffff;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  transition: all 0.3s;
-  box-shadow: none;
-}
-
-.el-input__inner,
-.el-textarea__inner {
-  height: 32px;
-  line-height: 32px;
-  padding: 0 12px;
-  color: #606266;
-  background-color: #ffffff;
-}
-
-.el-textarea__inner {
-  height: auto;
-  line-height: 1.5;
-  padding: 8px 12px;
-}
-
-/* 暗色主题覆盖样式 */
+/* 暗色主题输入框样式 */
 :deep(.dark-theme) .el-input__wrapper,
 :deep(.dark-theme) .el-textarea__wrapper {
   background-color: #141414 !important;
@@ -266,21 +254,22 @@ onMounted(() => {
   box-shadow: 0 0 0 1px #363637 inset !important;
 }
 
+/* 黑色主题的商品描述输入框样式 */
 :deep(.dark-theme) .el-input__inner,
-:deep(.dark-theme) .el-textarea__inner {
-  color: #141414  !important;
+:deep() .el-textarea__inner {
   background-color: #141414 !important;
+  color: #141414 ;
 }
 
-:deep(.dark-theme) .el-textarea__wrapper {
-  background-color: #141414 !important;
+/* 白色主题的商品描述输入框样式 */
+:deep(.el-textarea__inner) {
+  background-color: #ffffff !important;
+  color: #000000 !important;
 }
 
-:deep(.dark-theme) .el-textarea__inner {
-  background-color: #141414 !important;
-  color: #141414  !important;
-}
 
+
+/* 数字输入框按钮样式 */
 :deep(.dark-theme) .el-input-number__decrease,
 :deep(.dark-theme) .el-input-number__increase {
   background-color: #141414 !important;
@@ -331,36 +320,41 @@ onMounted(() => {
   border-top: 1px solid #363637;
 }
 
-/* 确认框样式 */
-:deep(.custom-message-box) .el-message-box__btns .el-button--default {
-  background-color: #f56c6c;
-  border-color: #f56c6c;
-  color: #ffffff;
+/* Alert 框样式统一 */
+:deep(.el-message) {
+  background-color: var(--el-message-bg-color);
+  border-color: var(--el-message-border-color);
 }
 
-:deep(.custom-message-box) .el-message-box__btns .el-button--default:hover {
-  background-color: #f78989;
-  border-color: #f78989;
+:deep(.el-message .el-message__content) {
+  color: #606266 !important;
 }
 
-:deep(.custom-message-box.dark-theme) {
-  background-color: #141414;
-  border-color: #363637;
+:deep(.el-message--success .el-message__content) {
+  color: #67c23a !important;
 }
 
-:deep(.custom-message-box.dark-theme) .el-message-box__title {
-  color: #ffffff;
+:deep(.el-message--warning .el-message__content) {
+  color: #e6a23c !important;
 }
 
-:deep(.custom-message-box.dark-theme) .el-message-box__content {
-  color: #ffffff;
+:deep(.el-message--error .el-message__content) {
+  color: #f56c6c !important;
 }
 
-:deep(.custom-message-box.dark-theme) .el-message-box__container {
-  background-color: #141414;
+:deep(.el-message .el-message__icon) {
+  color: inherit;
 }
 
-:deep(.custom-message-box.dark-theme) .el-message-box__headerbtn .el-message-box__close {
-  color: #ffffff;
+/* 提示窗口按钮样式 */
+:deep(.el-message-box__btns .el-button--default) {
+  background-color: #f56c6c !important;
+  border-color: #f56c6c !important;
+  color: #ffffff !important;
+}
+
+:deep(.el-message-box__btns .el-button--default:hover) {
+  background-color: #f78989 !important;
+  border-color: #f78989 !important;
 }
 </style> 
