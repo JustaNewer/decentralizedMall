@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -12,7 +13,8 @@ app.use(cors({
     origin: ['http://localhost:8080', 'http://127.0.0.1:8080', 'http://localhost:5173'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length'],
+    exposedHeaders: ['Content-Length', 'Content-Type']
 }));
 
 // 解析请求体
@@ -23,12 +25,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/upload', uploadRouter);
-
-// 添加请求日志中间件
-app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
-    next();
-});
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
