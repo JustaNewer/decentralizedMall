@@ -11,9 +11,9 @@
             <el-icon><Search /></el-icon>
           </template>
         </el-input>
-        <el-button type="warning" @click="handleSearch" class="search-button"
-          >搜索</el-button
-        >
+        <el-button type="warning" @click="handleSearch" class="search-button">
+          搜索
+        </el-button>
       </div>
       <el-button type="primary" @click="showAddDialog">+ 发布新商品</el-button>
     </div>
@@ -27,8 +27,26 @@
     >
       <el-table-column prop="product_id" label="商品ID" width="100" />
       <el-table-column prop="name" label="商品名称" />
+      <el-table-column label="商品图片" width="120">
+        <template #default="scope">
+          <el-image
+            style="width: 80px; height: 80px"
+            :src="scope.row.image_url"
+            fit="cover"
+            :preview-src-list="[scope.row.image_url]"
+          >
+            <template #error>
+              <div class="image-placeholder">
+                <el-icon><Picture /></el-icon>
+              </div>
+            </template>
+          </el-image>
+        </template>
+      </el-table-column>
       <el-table-column prop="price" label="价格" width="120">
-        <template #default="scope"> ¥{{ scope.row.price }} </template>
+        <template #default="scope">
+          ¥{{ scope.row.price }}
+        </template>
       </el-table-column>
       <el-table-column prop="description" label="描述" />
       <el-table-column label="操作" width="200">
@@ -45,8 +63,11 @@
       </el-table-column>
     </el-table>
 
-    <!-- 添加/编辑商品对话框 -->
-    <el-dialog :title="dialogTitle" v-model="dialogVisible" width="500px">
+    <el-dialog
+      v-model="dialogVisible"
+      :title="isEdit ? '编辑商品' : '发布新商品'"
+      width="500px"
+    >
       <el-form
         :model="currentProduct"
         label-width="auto"
@@ -66,12 +87,34 @@
             placeholder="请输入商品价格"
           />
         </el-form-item>
+        <el-form-item label="商品图片">
+          <el-upload
+            class="product-image-upload"
+            action="http://localhost:3000/api/upload"
+            :show-file-list="false"
+            :on-success="handleUploadSuccess"
+            :on-error="handleUploadError"
+            :before-upload="beforeUpload"
+            name="image"
+            accept="image/*"
+            :headers="uploadHeaders"
+          >
+            <img
+              v-if="currentProduct.image_url"
+              :src="currentProduct.image_url"
+              class="product-image"
+            />
+            <el-button v-else type="primary">点击上传图片</el-button>
+          </el-upload>
+        </el-form-item>
         <el-form-item label="商品描述">
           <el-input
             v-model="currentProduct.description"
             type="textarea"
             :rows="4"
-            placeholder="请输入商品描述"
+            placeholder="输入商品描述"
+            resize="both"
+            style="width: 100%"
           />
         </el-form-item>
       </el-form>
@@ -86,21 +129,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+/* eslint-disable no-unused-vars */
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { Search, Edit, Delete } from "@element-plus/icons-vue";
+import { Search, Edit, Delete, Picture } from "@element-plus/icons-vue";
+import { useUserStore } from "@/stores/user";
 
+const userStore = useUserStore();
 const products = ref([]);
-const searchQuery = ref("");
-const dialogVisible = ref(false);
-const dialogTitle = ref("");
 const loading = ref(false);
+const dialogVisible = ref(false);
+const isEdit = ref(false);
+const searchQuery = ref("");
+
+// 初始化当前商品对象
 const currentProduct = ref({
   name: "",
   price: 0,
   description: "",
+  image_url: "",
 });
+
+// 上传请求头
+const uploadHeaders = computed(() => ({
+  Authorization: `Bearer ${localStorage.getItem("token")}`,
+}));
 
 // 获取商品列表
 const fetchProducts = async () => {
@@ -118,64 +172,64 @@ const fetchProducts = async () => {
 
 // 搜索商品
 const handleSearch = async () => {
+  loading.value = true;
   try {
     const response = await axios.get(
-      `/api/products/search?q=${searchQuery.value}`
+      `/api/products/my${
+        searchQuery.value ? `/search?q=${searchQuery.value}` : ""
+      }`
     );
     products.value = response.data;
   } catch (error) {
+    console.error("搜索失败:", error);
     ElMessage.error("搜索失败");
+    products.value = [];
+  } finally {
+    loading.value = false;
   }
 };
 
 // 显示添加对话框
 const showAddDialog = () => {
-  dialogTitle.value = "添加商品";
+  isEdit.value = false;
   currentProduct.value = {
     name: "",
     price: 0,
     description: "",
+    image_url: "",
   };
   dialogVisible.value = true;
 };
 
 // 显示编辑对话框
 const handleEdit = (row) => {
-  dialogTitle.value = "编辑商品";
+  isEdit.value = true;
   currentProduct.value = { ...row };
   dialogVisible.value = true;
 };
 
-// 保存商品
+// 处理保存
 const handleSave = async () => {
   try {
-    // 验证价格是否为负数
-    if (currentProduct.value.price < 0) {
-      ElMessage.error('商品价格不能为负数');
-      return;
-    }
-
-    if (currentProduct.value.product_id) {
-      // 更新商品
+    if (isEdit.value) {
       await axios.put(
         `/api/products/${currentProduct.value.product_id}`,
         currentProduct.value
       );
+      ElMessage.success("更新成功");
     } else {
-      // 添加商品
       await axios.post("/api/products", currentProduct.value);
+      ElMessage.success("添加成功");
     }
     dialogVisible.value = false;
     fetchProducts();
-    ElMessage.success(
-      currentProduct.value.product_id ? "更新成功" : "添加成功"
-    );
   } catch (error) {
-    ElMessage.error(currentProduct.value.product_id ? "更新失败" : "添加失败");
+    console.error("保存失败:", error);
+    ElMessage.error(error.response?.data?.message || "保存失败");
   }
 };
 
-// 删除商品
+// 处理删除
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm("确定要删除这个商品吗？", "提示", {
@@ -184,21 +238,73 @@ const handleDelete = async (row) => {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       cancelButtonClass: "el-button--danger",
-      customClass: `custom-message-box${document.documentElement.classList.contains('dark-theme') ? ' dark-theme' : ''}`,
     });
 
     await axios.delete(`/api/products/${row.product_id}`);
-
-    fetchProducts();
     ElMessage.success("删除成功");
+    fetchProducts();
   } catch (error) {
     if (error !== "cancel") {
-      ElMessage.error("删除失败");
+      console.error("删除失败:", error);
+      ElMessage.error(error.response?.data?.message || "删除失败");
     }
   }
 };
 
-// 验证价格
+// 处理图片上传成功
+const handleUploadSuccess = (response) => {
+  console.log("上传成功:", response);
+  if (response && response.url) {
+    // 确保 URL 格式正确
+    const imageUrl = response.url.replace(/https:\/\/https:\/\//, "https://");
+    currentProduct.value.image_url = imageUrl;
+    ElMessage.success("图片上传成功");
+  } else {
+    ElMessage.error("获取图片 URL 失败");
+  }
+};
+
+// 处理图片上传失败
+const handleUploadError = (error) => {
+  console.error("上传失败:", error);
+  let errorMessage = "图片上传失败";
+
+  if (error.response) {
+    const response = error.response.data;
+    console.error("错误响应:", response);
+
+    switch (response.type) {
+      case "MULTER_ERROR":
+        errorMessage = "文件上传错误: " + response.message;
+        break;
+      case "NO_FILE_ERROR":
+        errorMessage = "请选择要上传的图片";
+        break;
+      default:
+        errorMessage = response.message || "上传失败，请重试";
+    }
+  }
+
+  ElMessage.error(errorMessage);
+};
+
+// 上传前验证
+const beforeUpload = (file) => {
+  const isImage = file.type.startsWith("image/");
+  const isLt5M = file.size / 1024 / 1024 < 5;
+
+  if (!isImage) {
+    ElMessage.error("只能上传图片文件!");
+    return false;
+  }
+  if (!isLt5M) {
+    ElMessage.error("图片大小不能超过 5MB!");
+    return false;
+  }
+  return true;
+};
+
+// 价格验证
 const validatePrice = (value) => {
   if (value < 0) {
     currentProduct.value.price = 0;
@@ -246,6 +352,28 @@ onMounted(() => {
   margin-top: 20px;
 }
 
+.product-image-upload {
+  text-align: center;
+}
+
+.product-image {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f7fa;
+  color: #909399;
+  font-size: 24px;
+}
+
 /* 暗色主题输入框样式 */
 :deep(.dark-theme) .el-input__wrapper,
 :deep(.dark-theme) .el-textarea__wrapper {
@@ -256,9 +384,9 @@ onMounted(() => {
 
 /* 黑色主题的商品描述输入框样式 */
 :deep(.dark-theme) .el-input__inner,
-:deep() .el-textarea__inner {
+:deep(.dark-theme) .el-textarea__inner {
   background-color: #141414 !important;
-  color: #141414 ;
+  color: #ffffff !important;
 }
 
 /* 白色主题的商品描述输入框样式 */
@@ -266,8 +394,6 @@ onMounted(() => {
   background-color: #ffffff !important;
   color: #000000 !important;
 }
-
-
 
 /* 数字输入框按钮样式 */
 :deep(.dark-theme) .el-input-number__decrease,
@@ -283,7 +409,7 @@ onMounted(() => {
   border-color: #363637 !important;
 }
 
-/* 对话框样式 */
+/* 对���框样式 */
 :deep(.el-dialog) {
   background-color: var(--el-bg-color-overlay);
 }
@@ -318,43 +444,5 @@ onMounted(() => {
 
 :deep(.dark-theme) .el-dialog__footer {
   border-top: 1px solid #363637;
-}
-
-/* Alert 框样式统一 */
-:deep(.el-message) {
-  background-color: var(--el-message-bg-color);
-  border-color: var(--el-message-border-color);
-}
-
-:deep(.el-message .el-message__content) {
-  color: #606266 !important;
-}
-
-:deep(.el-message--success .el-message__content) {
-  color: #67c23a !important;
-}
-
-:deep(.el-message--warning .el-message__content) {
-  color: #e6a23c !important;
-}
-
-:deep(.el-message--error .el-message__content) {
-  color: #f56c6c !important;
-}
-
-:deep(.el-message .el-message__icon) {
-  color: inherit;
-}
-
-/* 提示窗口按钮样式 */
-:deep(.el-message-box__btns .el-button--default) {
-  background-color: #f56c6c !important;
-  border-color: #f56c6c !important;
-  color: #ffffff !important;
-}
-
-:deep(.el-message-box__btns .el-button--default:hover) {
-  background-color: #f78989 !important;
-  border-color: #f78989 !important;
 }
 </style> 

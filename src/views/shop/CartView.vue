@@ -10,6 +10,22 @@
     >
       <el-table-column type="selection" width="55" />
       <el-table-column prop="name" label="商品名称" />
+      <el-table-column label="商品图片" width="120">
+        <template #default="scope">
+          <el-image
+            style="width: 80px; height: 80px"
+            :src="scope.row.image_url"
+            fit="cover"
+            :preview-src-list="[scope.row.image_url]"
+          >
+            <template #error>
+              <div class="image-placeholder">
+                <el-icon><Picture /></el-icon>
+              </div>
+            </template>
+          </el-image>
+        </template>
+      </el-table-column>
       <el-table-column prop="price" label="单价" width="120">
         <template #default="scope">
           ¥{{ scope.row.price }}
@@ -38,6 +54,7 @@
             size="small"
             @click="handleDelete(scope.row)"
           >
+            <el-icon><Delete /></el-icon>
             删除
           </el-button>
         </template>
@@ -67,6 +84,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { Delete, Picture } from '@element-plus/icons-vue';
 import axios from 'axios';
 
 const loading = ref(false);
@@ -112,7 +130,7 @@ const handleQuantityChange = async (item, value) => {
 // 删除商品
 const handleDelete = async (item) => {
   try {
-    await ElMessageBox.confirm('确定要从购物车中删除这个商品吗？', '提示', {
+    await ElMessageBox.confirm('确定要从购物车中删除这个商品？', '提示', {
       type: 'warning',
       confirmButtonText: '确定',
       cancelButtonText: '取消',
@@ -239,5 +257,16 @@ onMounted(() => {
 
 :deep(.dark-theme) .el-input-number {
   color: #ffffff !important;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f7fa;
+  color: #909399;
+  font-size: 24px;
 }
 </style> 
