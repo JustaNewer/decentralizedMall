@@ -231,4 +231,63 @@ body,
 .icon-button:hover {
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* 统一 ElMessage 样式 */
+.el-message {
+  --el-message-bg-color: #ffffff !important;
+  --el-message-border-color: #e4e4e4 !important;
+  background-color: var(--el-message-bg-color) !important;
+  border-color: var(--el-message-border-color) !important;
+}
+
+.el-message .el-message__content {
+  color: #303133 !important;
+}
+
+/* 成功消息 */
+.el-message--success {
+  background-color: #f0f9eb !important;
+  border-color: #e1f3d8 !important;
+}
+
+.el-message--success .el-message__content {
+  color: #67c23a !important;
+}
+
+.el-message--success .el-message__icon {
+  color: #67c23a !important;
+}
+
+/* 警告消息 */
+.el-message--warning {
+  background-color: #fdf6ec !important;
+  border-color: #faecd8 !important;
+}
+
+.el-message--warning .el-message__content {
+  color: #e6a23c !important;
+}
+
+.el-message--warning .el-message__icon {
+  color: #e6a23c !important;
+}
+
+/* 错误消息 */
+.el-message--error {
+  background-color: #fef0f0 !important;
+  border-color: #fde2e2 !important;
+}
+
+.el-message--error .el-message__content {
+  color: #f56c6c !important;
+}
+
+.el-message--error .el-message__icon {
+  color: #f56c6c !important;
+}
+
+/* 普通消息图标 */
+.el-message .el-message__icon {
+  color: #909399 !important;
+}
 </style>
