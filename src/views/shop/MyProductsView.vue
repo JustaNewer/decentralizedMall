@@ -44,9 +44,7 @@
         </template>
       </el-table-column>
       <el-table-column prop="price" label="价格" width="120">
-        <template #default="scope">
-          ¥{{ scope.row.price }}
-        </template>
+        <template #default="scope"> ¥{{ scope.row.price }} </template>
       </el-table-column>
       <el-table-column prop="description" label="描述" />
       <el-table-column label="操作" width="200">
@@ -55,7 +53,11 @@
             <el-icon><Edit /></el-icon>
             编辑
           </el-button>
-          <el-button type="danger" size="small" @click="handleDelete(scope.row)">
+          <el-button
+            type="danger"
+            size="small"
+            @click="handleDelete(scope.row)"
+          >
             <el-icon><Delete /></el-icon>
             删除
           </el-button>
@@ -98,6 +100,7 @@
             name="image"
             accept="image/*"
             :headers="uploadHeaders"
+            :with-credentials="true"
           >
             <img
               v-if="currentProduct.image_url"
@@ -120,7 +123,9 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="danger" @click="dialogVisible = false">取消</el-button>
+          <el-button type="danger" @click="dialogVisible = false"
+            >取消</el-button
+          >
           <el-button type="primary" @click="handleSave">确定</el-button>
         </div>
       </template>
@@ -308,7 +313,7 @@ const beforeUpload = (file) => {
 const validatePrice = (value) => {
   if (value < 0) {
     currentProduct.value.price = 0;
-    ElMessage.warning('价格不能为负数');
+    ElMessage.warning("价格不能为负数");
   }
 };
 
@@ -374,7 +379,7 @@ onMounted(() => {
   font-size: 24px;
 }
 
-/* 暗色主题输入框样式 */
+/* 暗色主题输入框样��� */
 :deep(.dark-theme) .el-input__wrapper,
 :deep(.dark-theme) .el-textarea__wrapper {
   background-color: #141414 !important;
@@ -409,7 +414,7 @@ onMounted(() => {
   border-color: #363637 !important;
 }
 
-/* 对���框样式 */
+/* 对话框样式 */
 :deep(.el-dialog) {
   background-color: var(--el-bg-color-overlay);
 }

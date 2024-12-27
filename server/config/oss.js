@@ -1,3 +1,5 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const OSS = require('ali-oss');
 
 // 从环境变量获取敏感信息

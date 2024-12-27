@@ -21,6 +21,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 添加请求日志中间件
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+    console.log('请求头:', req.headers);
+    next();
+});
+
 // 注册路由
 app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);

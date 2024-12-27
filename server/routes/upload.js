@@ -32,12 +32,12 @@ function generateFileName(originalname) {
 
 // 处理图片上传
 router.post('/', (req, res) => {
-    console.log('收到上传请求');
+    console.log('收到上传请求，请求头:', req.headers);
 
     upload(req, res, async (err) => {
         try {
             if (err) {
-                console.error('Multer 错��:', err);
+                console.error('Multer 错误:', err);
                 return res.status(400).json({
                     message: err.message,
                     type: 'MULTER_ERROR'
@@ -56,7 +56,9 @@ router.post('/', (req, res) => {
             console.log('接收到文件:', {
                 originalName: file.originalname,
                 size: file.size,
-                mimeType: file.mimetype
+                mimeType: file.mimetype,
+                buffer: file.buffer ? '存在' : '不存在',
+                bufferLength: file.buffer ? file.buffer.length : 0
             });
 
             // 生成文件名
@@ -64,13 +66,27 @@ router.post('/', (req, res) => {
             const ext = path.extname(file.originalname);
             const objectName = `${fileName}${ext}`;
 
+            console.log('准备上传到 OSS:', {
+                objectName,
+                mimeType: file.mimetype,
+                bufferLength: file.buffer.length
+            });
+
             try {
                 // 上传到阿里云 OSS
                 const result = await ossClient.put(objectName, file.buffer, {
                     mime: file.mimetype,
                     headers: {
-                        'Content-Type': file.mimetype
+                        'Content-Type': file.mimetype,
+                        'x-oss-object-acl': 'public-read'
                     }
+                });
+
+                console.log('OSS 上传结果:', {
+                    name: result.name,
+                    url: result.url,
+                    status: result.res && result.res.status,
+                    requestId: result.res && result.res.requestId
                 });
 
                 if (!result.url) {
@@ -79,24 +95,41 @@ router.post('/', (req, res) => {
 
                 // 返回正确格式的 URL
                 const imageUrl = `https://decentralizedmall.oss-cn-beijing.aliyuncs.com/${objectName}`;
-                console.log('上传成功，图片URL:', imageUrl);
+                console.log('最终图片URL:', imageUrl);
 
                 res.json({
                     url: imageUrl,
                     message: '上传成功'
                 });
             } catch (ossError) {
-                console.error('OSS 上传错误:', ossError);
+                console.error('OSS 上传错误:', {
+                    name: ossError.name,
+                    message: ossError.message,
+                    code: ossError.code,
+                    requestId: ossError.requestId,
+                    hostId: ossError.hostId,
+                    region: ossError.region,
+                    stack: ossError.stack
+                });
                 res.status(500).json({
                     message: '图片上传到OSS失败',
-                    error: ossError.message
+                    error: ossError.message,
+                    details: {
+                        code: ossError.code,
+                        requestId: ossError.requestId
+                    }
                 });
             }
         } catch (error) {
-            console.error('图片上传失败:', error);
+            console.error('图片上传失败:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            });
             res.status(500).json({
                 message: '图片上传失败',
-                error: error.message
+                error: error.message,
+                details: error.stack
             });
         }
     });
