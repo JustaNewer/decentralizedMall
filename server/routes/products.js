@@ -304,4 +304,76 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// 购买商品
+router.post('/purchase', authenticateToken, async (req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const { items } = req.body; // items: [{product_id, quantity, cart_id?}]
+        const buyer_id = req.user.userId;
+
+        // 计算订单总金额并创建订单
+        let totalPrice = 0;
+        const [products] = await connection.query(
+            'SELECT p.*, u.username as seller_name FROM products p JOIN users u ON p.created_by = u.user_id WHERE p.product_id IN (?)',
+            [items.map(item => item.product_id)]
+        );
+
+        const productMap = products.reduce((map, product) => {
+            map[product.product_id] = product;
+            return map;
+        }, {});
+
+        // 计算总金额
+        for (const item of items) {
+            const product = productMap[item.product_id];
+            if (!product) {
+                await connection.rollback();
+                return res.status(404).json({ message: '商品不存在' });
+            }
+            totalPrice += product.price * item.quantity;
+        }
+
+        // 创建订单
+        const [orderResult] = await connection.query(
+            'INSERT INTO orders (user_id, total_price, order_status) VALUES (?, ?, ?)',
+            [buyer_id, totalPrice, '未支付']
+        );
+        const orderId = orderResult.insertId;
+
+        // 创建订单商品记录
+        for (const item of items) {
+            const product = productMap[item.product_id];
+
+            // 添加订单商品记录
+            await connection.query(
+                'INSERT INTO order_products (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)',
+                [orderId, item.product_id, item.quantity, product.price]
+            );
+
+            // 发送通知给卖家
+            const notificationMessage = `用户已购买您的商品"${product.name}" x ${item.quantity}`;
+            await connection.query(
+                'INSERT INTO notifications (user_id, message) VALUES (?, ?)',
+                [product.created_by, notificationMessage]
+            );
+
+            // 如果是从购物车购买，删除购物车项
+            if (item.cart_id) {
+                await connection.query('DELETE FROM shopping_cart WHERE cart_id = ?', [item.cart_id]);
+            }
+        }
+
+        await connection.commit();
+        res.json({ message: '购买成功', orderId });
+    } catch (error) {
+        await connection.rollback();
+        console.error('购买商品错误:', error);
+        res.status(500).json({ message: '购买失败' });
+    } finally {
+        connection.release();
+    }
+});
+
 module.exports = router 

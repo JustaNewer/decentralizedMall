@@ -5,6 +5,7 @@ const path = require('path');
 const authRouter = require('./routes/auth');
 const productsRouter = require('./routes/products');
 const uploadRouter = require('./routes/upload');
+const ordersRouter = require('./routes/orders');
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/orders', ordersRouter);
 
 // 错误处理中间件
 app.use((err, req, res, next) => {

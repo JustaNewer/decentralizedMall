@@ -41,6 +41,12 @@ const routes = [
             {
                 path: 'notifications',
                 component: () => import('../views/shop/NotificationsView.vue')
+            },
+            {
+                path: 'orders',
+                name: 'orders',
+                component: () => import('../views/shop/OrdersView.vue'),
+                meta: { requiresAuth: true }
             }
         ]
     }

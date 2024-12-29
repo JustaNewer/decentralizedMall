@@ -1,7 +1,7 @@
 <template>
   <div class="notifications-view">
     <h2>我的通知</h2>
-    
+
     <el-timeline v-loading="loading">
       <el-timeline-item
         v-for="notification in notifications"
@@ -12,18 +12,15 @@
         {{ notification.message }}
       </el-timeline-item>
 
-      <el-empty
-        v-if="notifications.length === 0"
-        description="暂无通知"
-      />
+      <el-empty v-if="notifications.length === 0" description="暂无通知" />
     </el-timeline>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { ElMessage } from 'element-plus';
-import axios from 'axios';
+import { ref, onMounted, onUnmounted } from "vue";
+import { ElMessage } from "element-plus";
+import axios from "axios";
 
 const loading = ref(false);
 const notifications = ref([]);
@@ -32,11 +29,11 @@ const notifications = ref([]);
 const fetchNotifications = async () => {
   loading.value = true;
   try {
-    const response = await axios.get('/api/products/notifications');
+    const response = await axios.get("/api/products/notifications");
     notifications.value = response.data || [];
   } catch (error) {
-    console.error('获取通知失败:', error);
-    ElMessage.error(error.response?.data?.message || '获取通知失败');
+    console.error("获取通知失败:", error);
+    ElMessage.error(error.response?.data?.message || "获取通知失败");
     notifications.value = [];
   } finally {
     loading.value = false;
@@ -47,16 +44,16 @@ const fetchNotifications = async () => {
 const formatTime = (timestamp) => {
   try {
     const date = new Date(timestamp);
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   } catch (error) {
-    console.error('时间格式化错误:', error);
-    return '时间格式错误';
+    console.error("时间格式化错误:", error);
+    return "时间格式错误";
   }
 };
 

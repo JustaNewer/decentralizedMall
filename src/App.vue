@@ -15,20 +15,28 @@
           :inactive-icon="Sunny"
           @change="toggleTheme"
         />
-        <el-badge :value="notificationCount" :hidden="notificationCount === 0">
+        <template v-if="userStore.isLoggedIn">
+          <el-badge :value="notificationCount" :hidden="notificationCount === 0">
+            <el-button
+              class="icon-button"
+              :icon="Bell"
+              circle
+              @click="$router.push('/home/notifications')"
+            />
+          </el-badge>
           <el-button
             class="icon-button"
-            :icon="Bell"
+            :icon="ShoppingCart"
             circle
-            @click="$router.push('/home/notifications')"
+            @click="$router.push('/home/cart')"
           />
-        </el-badge>
-        <el-button
-          class="icon-button"
-          :icon="ShoppingCart"
-          circle
-          @click="$router.push('/home/cart')"
-        />
+          <el-button
+            class="icon-button"
+            :icon="List"
+            circle
+            @click="$router.push('/home/orders')"
+          />
+        </template>
       </div>
       <router-view></router-view>
     </div>
@@ -39,7 +47,7 @@
 import { ref, watch, onMounted } from "vue";
 import { ElConfigProvider } from "element-plus";
 import zhCn from "element-plus/dist/locale/zh-cn.mjs";
-import { Moon, Sunny, Bell, ShoppingCart } from "@element-plus/icons-vue";
+import { Moon, Sunny, Bell, ShoppingCart, List } from "@element-plus/icons-vue";
 import axios from "axios";
 import { useUserStore } from "./stores/user";
 

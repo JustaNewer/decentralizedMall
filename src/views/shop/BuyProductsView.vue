@@ -127,23 +127,16 @@ const handleAddToCart = async (product) => {
 
 const handleBuy = async (product) => {
   try {
-    if (product.created_by === userStore.user.user_id) {
-      ElMessage.warning("不能购买自己的商品");
-      return;
-    }
-
-    const cartResponse = await axios.post("/api/products/cart/add", {
-      product_id: product.product_id,
-      quantity: 1,
+    await axios.post("/api/products/purchase", {
+      items: [
+        {
+          product_id: product.product_id,
+          quantity: 1,
+        },
+      ],
     });
 
-    const cartItemId = cartResponse.data.cart_id;
-
-    await axios.post("/api/products/cart/purchase", {
-      cart_ids: [cartItemId],
-    });
-
-    ElMessage.success(`已成功购买 ${product.name}`);
+    ElMessage.success("购买成功");
   } catch (error) {
     console.error("购买失败:", error);
     ElMessage.error(error.response?.data?.message || "购买失败");

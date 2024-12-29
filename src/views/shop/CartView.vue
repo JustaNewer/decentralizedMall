@@ -27,9 +27,7 @@
         </template>
       </el-table-column>
       <el-table-column prop="price" label="单价" width="120">
-        <template #default="scope">
-          ¥{{ scope.row.price }}
-        </template>
+        <template #default="scope"> ¥{{ scope.row.price }} </template>
       </el-table-column>
       <el-table-column label="数量" width="150">
         <template #default="scope">
@@ -62,9 +60,7 @@
     </el-table>
 
     <div class="cart-footer" v-if="cartItems.length > 0">
-      <div class="total-price">
-        总计: ¥{{ totalPrice.toFixed(2) }}
-      </div>
+      <div class="total-price">总计: ¥{{ totalPrice.toFixed(2) }}</div>
       <el-button
         type="primary"
         :disabled="selectedItems.length === 0"
@@ -74,18 +70,15 @@
       </el-button>
     </div>
 
-    <el-empty
-      v-else
-      description="购物车是空的"
-    />
+    <el-empty v-else description="购物车是空的" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { Delete, Picture } from '@element-plus/icons-vue';
-import axios from 'axios';
+import { ref, computed, onMounted } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { Delete, Picture } from "@element-plus/icons-vue";
+import axios from "axios";
 
 const loading = ref(false);
 const cartItems = ref([]);
@@ -102,11 +95,11 @@ const totalPrice = computed(() => {
 const fetchCartItems = async () => {
   loading.value = true;
   try {
-    const response = await axios.get('/api/products/cart');
+    const response = await axios.get("/api/products/cart");
     cartItems.value = response.data || [];
   } catch (error) {
-    console.error('获取购物车失败:', error);
-    ElMessage.error(error.response?.data?.message || '获取购物车失败');
+    console.error("获取购物车失败:", error);
+    ElMessage.error(error.response?.data?.message || "获取购物车失败");
     cartItems.value = [];
   } finally {
     loading.value = false;
@@ -117,11 +110,11 @@ const fetchCartItems = async () => {
 const handleQuantityChange = async (item, value) => {
   try {
     await axios.put(`/api/products/cart/${item.cart_id}`, {
-      quantity: value
+      quantity: value,
     });
   } catch (error) {
-    console.error('更新数量失败:', error);
-    ElMessage.error(error.response?.data?.message || '更新数量失败');
+    console.error("更新数量失败:", error);
+    ElMessage.error(error.response?.data?.message || "更新数量失败");
     // 恢复原来的数量
     await fetchCartItems();
   }
@@ -130,20 +123,20 @@ const handleQuantityChange = async (item, value) => {
 // 删除商品
 const handleDelete = async (item) => {
   try {
-    await ElMessageBox.confirm('确定要从购物车中删除这个商品？', '提示', {
-      type: 'warning',
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      cancelButtonClass: "el-button--danger"
+    await ElMessageBox.confirm("确定要从购物车中删除这个商品？", "提示", {
+      type: "warning",
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      cancelButtonClass: "el-button--danger",
     });
-    
+
     await axios.delete(`/api/products/cart/${item.cart_id}`);
-    ElMessage.success('删除成功');
+    ElMessage.success("删除成功");
     await fetchCartItems();
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('删除失败:', error);
-      ElMessage.error(error.response?.data?.message || '删除失败');
+    if (error !== "cancel") {
+      console.error("删除失败:", error);
+      ElMessage.error(error.response?.data?.message || "删除失败");
     }
   }
 };
@@ -156,31 +149,25 @@ const handleSelectionChange = (items) => {
 // 购买商品
 const handlePurchase = async () => {
   if (selectedItems.value.length === 0) {
-    ElMessage.warning('请选择要购买的商品');
+    ElMessage.warning("请选择要购买的商品");
     return;
   }
 
   try {
-    await ElMessageBox.confirm(
-      `确定要购买选中的 ${selectedItems.value.length} 件商品吗？总计: ¥${totalPrice.value.toFixed(2)}`,
-      '确认购买',
-      {
-        confirmButtonText: '确认支付',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    );
+    const items = selectedItems.value.map((item) => ({
+      product_id: item.product_id,
+      quantity: item.quantity,
+      cart_id: item.cart_id,
+    }));
 
-    const cart_ids = selectedItems.value.map(item => item.cart_id);
-    await axios.post('/api/products/purchase', { cart_ids });
-    
-    ElMessage.success('购买成功');
-    await fetchCartItems();
+    await axios.post("/api/products/purchase", { items });
+
+    ElMessage.success("购买成功");
+    // 刷新购物车列表
+    fetchCartItems();
   } catch (error) {
-    if (error !== 'cancel') {
-      console.error('购买失败:', error);
-      ElMessage.error(error.response?.data?.message || '购买失败');
-    }
+    console.error("购买失败:", error);
+    ElMessage.error(error.response?.data?.message || "购买失败");
   }
 };
 
