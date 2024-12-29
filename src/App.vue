@@ -40,8 +40,8 @@ import { ref, watch, onMounted } from "vue";
 import { ElConfigProvider } from "element-plus";
 import zhCn from "element-plus/dist/locale/zh-cn.mjs";
 import { Moon, Sunny, Bell, ShoppingCart } from "@element-plus/icons-vue";
-import axios from 'axios';
-import { useUserStore } from './stores/user';
+import axios from "axios";
+import { useUserStore } from "./stores/user";
 
 const size = ref("default");
 const isDark = ref(false);
@@ -61,34 +61,32 @@ watch(isDark, (newVal) => {
 const fetchNotificationCount = async () => {
   if (userStore.isLoggedIn) {
     try {
-      const response = await axios.get('/api/products/notifications');
+      const response = await axios.get("/api/products/notifications");
       notificationCount.value = response.data.length;
     } catch (error) {
-      console.error('获取通知数量失败:', error);
+      console.error("获取通知数量失败:", error);
     }
   }
 };
 
-// 定期检查通知
-const startNotificationPolling = () => {
-  fetchNotificationCount();
-  setInterval(fetchNotificationCount, 30000); // 每30秒检查一次
-};
-
+// 只在组件挂载时获取一次通知数量
 onMounted(() => {
   if (userStore.isLoggedIn) {
-    startNotificationPolling();
+    fetchNotificationCount();
   }
 });
 
 // 监听登录状态变化
-watch(() => userStore.isLoggedIn, (newVal) => {
-  if (newVal) {
-    startNotificationPolling();
-  } else {
-    notificationCount.value = 0;
+watch(
+  () => userStore.isLoggedIn,
+  (newVal) => {
+    if (newVal) {
+      fetchNotificationCount();
+    } else {
+      notificationCount.value = 0;
+    }
   }
-});
+);
 </script>
 
 <style>
