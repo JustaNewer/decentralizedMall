@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { ElConfigProvider } from "element-plus";
 import zhCn from "element-plus/dist/locale/zh-cn.mjs";
 import { Moon, Sunny, Bell, ShoppingCart, List } from "@element-plus/icons-vue";
@@ -69,18 +69,27 @@ watch(isDark, (newVal) => {
 const fetchNotificationCount = async () => {
   if (userStore.isLoggedIn) {
     try {
-      const response = await axios.get("/api/products/notifications");
-      notificationCount.value = response.data.length;
+      const response = await axios.get("/api/products/notifications/unread");
+      notificationCount.value = response.data.count;
     } catch (error) {
       console.error("获取通知数量失败:", error);
     }
   }
 };
 
-// 只在组件挂载时获取一次通知数量
+// 每30秒刷新一次通知数量
+let notificationTimer = null;
+
 onMounted(() => {
   if (userStore.isLoggedIn) {
     fetchNotificationCount();
+    notificationTimer = setInterval(fetchNotificationCount, 30000);
+  }
+});
+
+onUnmounted(() => {
+  if (notificationTimer) {
+    clearInterval(notificationTimer);
   }
 });
 

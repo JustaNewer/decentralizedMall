@@ -47,20 +47,33 @@
         <template #default="scope"> ¥{{ scope.row.price }} </template>
       </el-table-column>
       <el-table-column prop="description" label="描述" />
+      <el-table-column prop="status_text" label="状态" width="100">
+        <template #default="scope">
+          <el-tag :type="scope.row.purchase_status === 1 ? 'danger' : 'success'">
+            {{ scope.row.status_text }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" width="200">
         <template #default="scope">
-          <el-button type="primary" size="small" @click="handleEdit(scope.row)">
-            <el-icon><Edit /></el-icon>
-            编辑
-          </el-button>
-          <el-button
-            type="danger"
-            size="small"
-            @click="handleDelete(scope.row)"
-          >
-            <el-icon><Delete /></el-icon>
-            删除
-          </el-button>
+          <div class="button-group">
+            <el-button
+              type="primary"
+              size="small"
+              :disabled="scope.row.purchase_status === 1"
+              @click="handleEdit(scope.row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              type="danger"
+              size="small"
+              :disabled="scope.row.purchase_status === 1"
+              @click="handleDelete(scope.row)"
+            >
+              删除
+            </el-button>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -379,7 +392,7 @@ onMounted(() => {
   font-size: 24px;
 }
 
-/* 暗色主题输入框样��� */
+/* 暗色主题输入框样式 */
 :deep(.dark-theme) .el-input__wrapper,
 :deep(.dark-theme) .el-textarea__wrapper {
   background-color: #141414 !important;
@@ -427,6 +440,30 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+/* 自定义状态标签颜色 */
+:deep(.el-tag--success) {
+  background-color: #006400;
+  border-color: #006400;
+  color: white;
+}
+
+:deep(.el-tag--danger) {
+  background-color: #8B0000;
+  border-color: #8B0000;
+  color: white;
+}
+
+/* 鼠标悬停效果 */
+:deep(.el-tag--success:hover) {
+  background-color: #008000;
+  border-color: #008000;
+}
+
+:deep(.el-tag--danger:hover) {
+  background-color: #A00000;
+  border-color: #A00000;
 }
 
 /* 暗色主题对话框样式 */

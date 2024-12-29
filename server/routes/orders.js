@@ -5,38 +5,46 @@ const authenticateToken = require('../middleware/auth');
 
 // 获取用户的订单列表
 router.get('/', authenticateToken, async (req, res) => {
+    const connection = await pool.getConnection();
     try {
-        const [orders] = await pool.query(
-            `SELECT o.*, 
-                    GROUP_CONCAT(
-                        JSON_OBJECT(
-                            'id', op.id,
-                            'product_id', op.product_id,
-                            'quantity', op.quantity,
-                            'price', op.price,
-                            'name', p.name,
-                            'image_url', p.image_url
-                        )
-                    ) as products
-             FROM orders o
-             LEFT JOIN order_products op ON o.order_id = op.order_id
-             LEFT JOIN products p ON op.product_id = p.product_id
-             WHERE o.user_id = ?
-             GROUP BY o.order_id
+        // 1. 获取当前用户的订单基本信息
+        const [orders] = await connection.query(
+            `SELECT o.* 
+             FROM orders o 
+             WHERE o.user_id = ? 
              ORDER BY o.created_at DESC`,
             [req.user.userId]
         );
 
-        // 处理products字段，将字符串转换为数组
-        const processedOrders = orders.map(order => ({
-            ...order,
-            products: order.products ? order.products.split(',').map(p => JSON.parse(p)) : []
+        // 2. 获取每个订单的商品信息
+        const processedOrders = await Promise.all(orders.map(async (order) => {
+            const [products] = await connection.query(
+                `SELECT op.*, p.name, p.image_url, u.username as seller_name
+                 FROM order_products op
+                 JOIN products p ON op.product_id = p.product_id
+                 JOIN users u ON p.created_by = u.user_id
+                 WHERE op.order_id = ?`,
+                [order.order_id]
+            );
+
+            // 计算订单总金额（确保与数据库中的一致）
+            const totalPrice = products.reduce((sum, product) => {
+                return sum + (product.price * product.quantity);
+            }, 0);
+
+            return {
+                ...order,
+                products: products,
+                total_price: totalPrice
+            };
         }));
 
         res.json(processedOrders);
     } catch (error) {
         console.error('获取订单列表失败:', error);
         res.status(500).json({ message: '获取订单列表失败' });
+    } finally {
+        connection.release();
     }
 });
 

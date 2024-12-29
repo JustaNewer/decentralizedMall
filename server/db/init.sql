@@ -8,3 +8,6 @@ CREATE TABLE IF NOT EXISTS products (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (created_by) REFERENCES users(user_id)
 ); 
+
+-- 添加 is_read 字段到 notifications 表
+ALTER TABLE notifications ADD COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已读'; 
