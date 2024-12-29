@@ -29,11 +29,41 @@ app.use((req, res, next) => {
     next();
 });
 
+// 调试中间件 - 记录所有请求
+app.use((req, res, next) => {
+    console.log('收到请求:', {
+        method: req.method,
+        url: req.url,
+        path: req.path,
+        params: req.params,
+        query: req.query,
+        body: req.body,
+        headers: req.headers
+    });
+    next();
+});
+
 // 注册路由
-app.use('/api/auth', authRouter);
-app.use('/api/products', productsRouter);
-app.use('/api/upload', uploadRouter);
+console.log('正在注册路由...');
+
+// 注册订单路由（移到前面）
 app.use('/api/orders', ordersRouter);
+console.log('已注册 orders 路由');
+
+app.use('/api/auth', authRouter);
+console.log('已注册 auth 路由');
+
+app.use('/api/products', productsRouter);
+console.log('已注册 products 路由');
+
+app.use('/api/upload', uploadRouter);
+console.log('已注册 upload 路由');
+
+// 404 处理中间件
+app.use((req, res, next) => {
+    console.log('404 - 未找到路由:', req.url);
+    res.status(404).json({ message: '未找到请求的资源' });
+});
 
 // 错误处理中间件
 app.use((err, req, res, next) => {
@@ -47,4 +77,9 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`服务器运行在端口 ${PORT}`);
+    console.log('已注册的路由:');
+    console.log('- /api/orders');
+    console.log('- /api/auth');
+    console.log('- /api/products');
+    console.log('- /api/upload');
 }); 
