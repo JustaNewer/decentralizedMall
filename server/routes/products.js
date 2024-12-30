@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const pool = require('../config/db')
 const authenticateToken = require('../middleware/auth')
+const { moderateContent } = require('../services/contentModeration')
 
 // 搜索我发布的商品
 router.get('/my/search', authenticateToken, async (req, res) => {
@@ -246,14 +247,76 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
     try {
         const { name, price, description, image_url } = req.body;
+
+        // 验证必填字段
+        if (!name || price === undefined) {
+            return res.status(400).json({
+                message: '商品名称和价格是必填项'
+            });
+        }
+
+        // 内容审核
+        console.log('正在进行内容审核...', {
+            name,
+            description,
+            image_url,
+            price
+        });
+
+        try {
+            const moderationResult = await moderateContent(name, description, image_url);
+
+            if (!moderationResult.passed) {
+                console.log('内容审核未通过:', moderationResult.reason);
+                return res.status(400).json({
+                    message: '商品内容审核未通过',
+                    reason: moderationResult.reason
+                });
+            }
+            console.log('内容审核通过');
+        } catch (moderationError) {
+            console.error('内容审核错误:', {
+                error: moderationError,
+                message: moderationError.message,
+                stack: moderationError.stack
+            });
+            return res.status(500).json({
+                message: '内容审核服务暂时不可用，请稍后重试',
+                details: moderationError.message
+            });
+        }
+
         const [result] = await pool.query(
             'INSERT INTO products (name, price, description, image_url, created_by) VALUES (?, ?, ?, ?, ?)',
             [name, price, description, image_url, req.user.userId]
         );
         res.json({ id: result.insertId, message: '添加成功' });
     } catch (error) {
-        console.error('添加商品失败:', error);
-        res.status(500).json({ message: '添加商品失败' });
+        console.error('添加商品失败:', {
+            error: error,
+            message: error.message,
+            stack: error.stack,
+            sql: error.sql,
+            sqlMessage: error.sqlMessage
+        });
+
+        // 根据错误类型返回不同的错误信息
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+            res.status(500).json({
+                message: '系统错误：数据表不存在',
+                details: error.sqlMessage
+            });
+        } else if (error.code === 'ER_BAD_FIELD_ERROR') {
+            res.status(500).json({
+                message: '系统错误：数据表结构不正确',
+                details: error.sqlMessage
+            });
+        } else {
+            res.status(500).json({
+                message: '添加商品失败',
+                details: error.message
+            });
+        }
     }
 });
 
@@ -261,6 +324,20 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const { name, price, description, image_url } = req.body;
+
+        // 内容审核
+        console.log('正在进行内容审核...');
+        const moderationResult = await moderateContent(name, description, image_url);
+
+        if (!moderationResult.passed) {
+            console.log('内容审核未通过:', moderationResult.reason);
+            return res.status(400).json({
+                message: '商品内容审核未通过',
+                reason: moderationResult.reason
+            });
+        }
+        console.log('内容审核通过');
+
         await pool.query(
             'UPDATE products SET name = ?, price = ?, description = ?, image_url = ? WHERE product_id = ? AND created_by = ?',
             [name, price, description, image_url, req.params.id, req.user.userId]
@@ -268,7 +345,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
         res.json({ message: '更新成功' });
     } catch (error) {
         console.error('更新商品失败:', error);
-        res.status(500).json({ message: '更新商品失败' });
+        res.status(500).json({
+            message: '更新商品失败',
+            details: error.message
+        });
     }
 });
 

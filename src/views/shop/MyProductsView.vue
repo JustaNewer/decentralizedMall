@@ -49,7 +49,9 @@
       <el-table-column prop="description" label="描述" />
       <el-table-column prop="status_text" label="状态" width="100">
         <template #default="scope">
-          <el-tag :type="scope.row.purchase_status === 1 ? 'danger' : 'success'">
+          <el-tag
+            :type="scope.row.purchase_status === 1 ? 'danger' : 'success'"
+          >
             {{ scope.row.status_text }}
           </el-tag>
         </template>
@@ -148,7 +150,7 @@
 
 <script setup>
 /* eslint-disable no-unused-vars */
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, h } from "vue";
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { Search, Edit, Delete, Picture } from "@element-plus/icons-vue";
@@ -230,20 +232,35 @@ const handleEdit = (row) => {
 const handleSave = async () => {
   try {
     if (isEdit.value) {
-      await axios.put(
+      const response = await axios.put(
         `/api/products/${currentProduct.value.product_id}`,
         currentProduct.value
       );
       ElMessage.success("更新成功");
     } else {
-      await axios.post("/api/products", currentProduct.value);
+      const response = await axios.post("/api/products", currentProduct.value);
       ElMessage.success("添加成功");
     }
     dialogVisible.value = false;
     fetchProducts();
   } catch (error) {
     console.error("保存失败:", error);
-    ElMessage.error(error.response?.data?.message || "保存失败");
+    if (error.response?.data?.reason) {
+      // 显示内容审核失败的具体原因
+      ElMessage.error({
+        message: h("div", null, [
+          h("div", null, "内容审核未通过"),
+          h(
+            "div",
+            { style: "font-size: 12px; margin-top: 5px;" },
+            error.response.data.reason
+          ),
+        ]),
+        duration: 5000,
+      });
+    } else {
+      ElMessage.error(error.response?.data?.message || "保存失败");
+    }
   }
 };
 
@@ -450,8 +467,8 @@ onMounted(() => {
 }
 
 :deep(.el-tag--danger) {
-  background-color: #8B0000;
-  border-color: #8B0000;
+  background-color: #8b0000;
+  border-color: #8b0000;
   color: white;
 }
 
@@ -462,8 +479,8 @@ onMounted(() => {
 }
 
 :deep(.el-tag--danger:hover) {
-  background-color: #A00000;
-  border-color: #A00000;
+  background-color: #a00000;
+  border-color: #a00000;
 }
 
 /* 暗色主题对话框样式 */
