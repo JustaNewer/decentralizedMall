@@ -247,16 +247,41 @@ const handleSave = async () => {
     console.error("保存失败:", error);
     if (error.response?.data?.reason) {
       // 显示内容审核失败的具体原因
-      ElMessage.error({
-        message: h("div", null, [
-          h("div", null, "内容审核未通过"),
-          h(
-            "div",
-            { style: "font-size: 12px; margin-top: 5px;" },
-            error.response.data.reason
-          ),
-        ]),
+      ElMessage({
+        message: h(
+          "div",
+          {
+            style: {
+              color: "#000000 !important", // 强制使用黑色文字
+              backgroundColor: "#fef0f0",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #fde2e2",
+            },
+          },
+          [
+            h(
+              "div",
+              { style: { fontWeight: "bold", color: "#000000 !important" } },
+              "内容审核未通过"
+            ),
+            h(
+              "div",
+              {
+                style: {
+                  marginTop: "5px",
+                  fontSize: "14px",
+                  color: "#000000 !important",
+                },
+              },
+              `原因: ${error.response.data.reason}`
+            ),
+          ]
+        ),
+        type: "error",
+        customClass: "moderation-error",
         duration: 5000,
+        showClose: true,
       });
     } else {
       ElMessage.error(error.response?.data?.message || "保存失败");
@@ -503,5 +528,31 @@ onMounted(() => {
 
 :deep(.dark-theme) .el-dialog__footer {
   border-top: 1px solid #363637;
+}
+
+/* 添加审核错误消息的样式 */
+:deep(.moderation-error) {
+  background-color: #fef0f0 !important;
+  border-color: #fde2e2 !important;
+}
+
+:deep(.moderation-error .el-message__content) {
+  color: #000000 !important;
+}
+
+:deep(.moderation-error .el-message__closeBtn) {
+  color: #000000 !important;
+}
+
+:deep(.dark-theme .moderation-error),
+:deep(.moderation-error) {
+  --el-message-text-color: #000000 !important;
+  --el-message-bg-color: #fef0f0 !important;
+  --el-message-border-color: #fde2e2 !important;
+}
+
+:deep(.dark-theme .moderation-error .el-message__content *),
+:deep(.moderation-error .el-message__content *) {
+  color: #000000 !important;
 }
 </style> 

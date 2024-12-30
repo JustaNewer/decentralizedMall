@@ -16,7 +16,10 @@
           @change="toggleTheme"
         />
         <template v-if="userStore.isLoggedIn">
-          <el-badge :value="notificationCount" :hidden="notificationCount === 0">
+          <el-badge
+            :value="notificationCount"
+            :hidden="notificationCount === 0"
+          >
             <el-button
               class="icon-button"
               :icon="Bell"
