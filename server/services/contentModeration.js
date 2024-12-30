@@ -40,7 +40,7 @@ async function moderateContent(name, description, imageUrl) {
     "isViolation": false,
     "reason": "通过"
 }
-
+不用检测拼写错误的问题
 如果发现违规，则返回：
 {
     "isViolation": true,

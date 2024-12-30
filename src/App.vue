@@ -15,7 +15,7 @@
           :inactive-icon="Sunny"
           @change="toggleTheme"
         />
-        <template v-if="userStore.isLoggedIn">
+        <template v-if="userStore.isLoggedIn && $route.path.startsWith('/home')">
           <el-badge
             :value="notificationCount"
             :hidden="notificationCount === 0"
